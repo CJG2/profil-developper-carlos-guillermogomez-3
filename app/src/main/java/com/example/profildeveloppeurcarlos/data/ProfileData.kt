@@ -27,6 +27,7 @@ val carlosProfile = Profile(
     // À adapter avec tes vrais projets
     projects = listOf(
         Project(
+            id = 1,
             title = "Front-End chez thecamp",
             description = "Développement d'interfaces web pour les outils internes et " +
                 "les événements de thecamp.",
@@ -34,6 +35,7 @@ val carlosProfile = Profile(
             year = "2025"
         ),
         Project(
+            id = 2,
             title = "Application mobile Expo",
             description = "Application React Native multiplateforme développée " +
                 "pendant le BUT Informatique.",
@@ -41,6 +43,7 @@ val carlosProfile = Profile(
             year = "2024"
         ),
         Project(
+            id = 3,
             title = "API REST Nest.js",
             description = "API avec authentification et base de données relationnelle " +
                 "pour un projet tuteuré.",
@@ -48,6 +51,7 @@ val carlosProfile = Profile(
             year = "2024"
         ),
         Project(
+            id = 4,
             title = "Profil développeur Compose",
             description = "Cette application : fiche de profil réalisée en Kotlin avec " +
                 "Jetpack Compose et Material 3.",
@@ -69,12 +73,14 @@ val thomasProfile = Profile(
     skills = listOf("TypeScript", "React", "Node.js", "PostgreSQL", "Docker"),
     projects = listOf(
         Project(
+            id = 5,
             title = "Plateforme e-commerce",
             description = "Refonte du tunnel de commande et du back-office.",
             technologies = listOf("React", "Node.js", "PostgreSQL"),
             year = "2025"
         ),
         Project(
+            id = 6,
             title = "Outil de suivi de livraisons",
             description = "Application interne de suivi en temps réel des livreurs.",
             technologies = listOf("TypeScript", "Docker"),

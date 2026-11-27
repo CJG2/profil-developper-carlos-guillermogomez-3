@@ -77,8 +77,8 @@ fun ProfileScreen(
                 modifier = Modifier.padding(top = 12.dp)
             )
         }
-        // key : identifie chaque projet pour que Compose suive correctement les éléments de la liste.
-        items(profile.projects, key = { it.title }) { project ->
+        // key : l'id identifie chaque projet pour que Compose suive correctement les éléments de la liste.
+        items(profile.projects, key = { it.id }) { project ->
             ProjectCard(
                 project = project,
                 modifier = Modifier.fillMaxWidth()
