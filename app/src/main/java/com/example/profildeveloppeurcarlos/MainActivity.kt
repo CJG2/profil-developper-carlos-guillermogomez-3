@@ -8,8 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
-import com.example.profildeveloppeurcarlos.data.carlosProfile
-import com.example.profildeveloppeurcarlos.ui.screens.ProfileScreen
+import com.example.profildeveloppeurcarlos.ui.profile.ProfileContainer
 import com.example.profildeveloppeurcarlos.ui.theme.ProfilDeveloppeurCarlosTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,8 +18,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProfilDeveloppeurCarlosTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ProfileScreen(
-                        profile = carlosProfile,
+                    // Le container récupère le ViewModel et affiche ProfileScreen avec son état.
+                    ProfileContainer(
                         onContactClick = {
                             // Plus tard : ouvrir l'application e-mail
                         },

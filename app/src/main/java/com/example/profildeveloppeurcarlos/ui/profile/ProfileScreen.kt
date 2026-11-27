@@ -1,4 +1,4 @@
-package com.example.profildeveloppeurcarlos.ui.screens
+package com.example.profildeveloppeurcarlos.ui.profile
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -22,19 +22,31 @@ import androidx.compose.ui.unit.dp
 import com.example.profildeveloppeurcarlos.data.carlosProfile
 import com.example.profildeveloppeurcarlos.data.thomasProfile
 import com.example.profildeveloppeurcarlos.model.Profile
+import com.example.profildeveloppeurcarlos.model.Project
 import com.example.profildeveloppeurcarlos.ui.components.ContactSection
+import com.example.profildeveloppeurcarlos.ui.components.EmptyProjectsMessage
 import com.example.profildeveloppeurcarlos.ui.components.ProfileActions
 import com.example.profildeveloppeurcarlos.ui.components.ProfileHeader
 import com.example.profildeveloppeurcarlos.ui.components.ProjectCard
+import com.example.profildeveloppeurcarlos.ui.components.ProjectFilterBar
+import com.example.profildeveloppeurcarlos.ui.components.ProjectSearchField
 import com.example.profildeveloppeurcarlos.ui.components.SectionTitle
 import com.example.profildeveloppeurcarlos.ui.components.TechnologyChip
 import com.example.profildeveloppeurcarlos.ui.theme.ProfilDeveloppeurCarlosTheme
 
-// Écran principal : une LazyColumn qui empile toutes les sections et fait défiler la page.
-// Chaque item() est une section, items() affiche un ProjectCard par projet.
+// Écran principal, STATELESS : il ne stocke pas l'état principal et ne connaît pas le ViewModel.
+// Il reçoit les valeurs à afficher en paramètres et remonte chaque action par un callback.
+// Une LazyColumn empile toutes les sections et fait défiler la page.
 @Composable
 fun ProfileScreen(
     profile: Profile,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    showOnlyFavorites: Boolean,
+    onToggleFavoriteFilter: () -> Unit,
+    favoriteProjectIds: Set<Int>,
+    onFavoriteClick: (Int) -> Unit,
+    visibleProjects: List<Project>,
     onContactClick: () -> Unit,
     onPortfolioClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -77,15 +89,37 @@ fun ProfileScreen(
                 modifier = Modifier.padding(top = 12.dp)
             )
         }
-        // key : l'id identifie chaque projet pour que Compose suive correctement les éléments de la liste.
-        items(profile.projects, key = { it.id }) { project ->
-            // Temporaire : les favoris seront branchés au ViewModel à l'étape 6.
-            ProjectCard(
-                project = project,
-                isFavorite = false,
-                onFavoriteClick = {},
+        item {
+            ProjectSearchField(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange
+            )
+        }
+        item {
+            ProjectFilterBar(
+                showOnlyFavorites = showOnlyFavorites,
+                onToggleFavoriteFilter = onToggleFavoriteFilter,
+                visibleProjectCount = visibleProjects.size,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
+        if (visibleProjects.isEmpty()) {
+            item {
+                EmptyProjectsMessage(
+                    message = emptyProjectsMessage(searchQuery, showOnlyFavorites),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        } else {
+            // key : l'id identifie chaque projet pour que Compose suive correctement les éléments de la liste.
+            items(visibleProjects, key = { it.id }) { project ->
+                ProjectCard(
+                    project = project,
+                    isFavorite = project.id in favoriteProjectIds,
+                    onFavoriteClick = { onFavoriteClick(project.id) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         item {
@@ -96,6 +130,7 @@ fun ProfileScreen(
             )
         }
         item {
+            // ContactSection garde son propre état local (zone ouverte ou fermée).
             ContactSection(
                 email = profile.email,
                 location = profile.location,
@@ -113,7 +148,18 @@ fun ProfileScreen(
     }
 }
 
-// Les previews d'écran partagent ce contenu : seuls le profil et le mode (clair/sombre) changent.
+// Message adapté à la raison pour laquelle la liste est vide.
+private fun emptyProjectsMessage(searchQuery: String, showOnlyFavorites: Boolean): String {
+    val query = searchQuery.trim()
+    return when {
+        query.isNotEmpty() && showOnlyFavorites -> "Aucun projet favori ne correspond à « $query »."
+        query.isNotEmpty() -> "Aucun projet ne correspond à « $query »."
+        else -> "Aucun projet en favori. Touchez le cœur d'un projet pour l'ajouter."
+    }
+}
+
+// Les previews utilisent directement ProfileScreen, sans ViewModel : on lui passe un état écrit à la main.
+// Ici, l'état initial : recherche vide, aucun favori, tous les projets affichés.
 @Composable
 private fun ProfileScreenPreviewContent(profile: Profile) {
     ProfilDeveloppeurCarlosTheme {
@@ -121,6 +167,13 @@ private fun ProfileScreenPreviewContent(profile: Profile) {
         Surface(color = MaterialTheme.colorScheme.background) {
             ProfileScreen(
                 profile = profile,
+                searchQuery = "",
+                onSearchQueryChange = {},
+                showOnlyFavorites = false,
+                onToggleFavoriteFilter = {},
+                favoriteProjectIds = emptySet(),
+                onFavoriteClick = {},
+                visibleProjects = profile.projects,
                 onContactClick = {},
                 onPortfolioClick = {},
                 modifier = Modifier.fillMaxSize()
@@ -148,7 +201,7 @@ fun ProfileScreenDarkPreview() {
 }
 
 // Même écran avec un autre profil : montre que les composants sont réutilisables
-// et affiche l'état « non disponible » (pastille rouge, champ Disponibilité).
+// et affiche l'état « non disponible » (pastille rouge).
 @Preview(name = "Non disponible", showBackground = true, heightDp = 1400)
 @Composable
 fun ProfileScreenUnavailablePreview() {
