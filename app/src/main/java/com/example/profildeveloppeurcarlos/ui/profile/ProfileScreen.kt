@@ -158,22 +158,33 @@ private fun emptyProjectsMessage(searchQuery: String, showOnlyFavorites: Boolean
     }
 }
 
-// Les previews utilisent directement ProfileScreen, sans ViewModel : on lui passe un état écrit à la main.
-// Ici, l'état initial : recherche vide, aucun favori, tous les projets affichés.
+// Les previews utilisent directement ProfileScreen, sans ViewModel : l'état est écrit à la main.
+// visibleProjects est calculé avec la même fonction filterProjects() que le ViewModel,
+// pour que chaque preview montre exactement ce que l'application afficherait dans cet état.
 @Composable
-private fun ProfileScreenPreviewContent(profile: Profile) {
+private fun ProfileScreenPreviewContent(
+    profile: Profile,
+    searchQuery: String = "",
+    showOnlyFavorites: Boolean = false,
+    favoriteProjectIds: Set<Int> = emptySet()
+) {
     ProfilDeveloppeurCarlosTheme {
         // Surface : applique la couleur de fond du thème, comme le Scaffold dans l'app.
         Surface(color = MaterialTheme.colorScheme.background) {
             ProfileScreen(
                 profile = profile,
-                searchQuery = "",
+                searchQuery = searchQuery,
                 onSearchQueryChange = {},
-                showOnlyFavorites = false,
+                showOnlyFavorites = showOnlyFavorites,
                 onToggleFavoriteFilter = {},
-                favoriteProjectIds = emptySet(),
+                favoriteProjectIds = favoriteProjectIds,
                 onFavoriteClick = {},
-                visibleProjects = profile.projects,
+                visibleProjects = filterProjects(
+                    projects = profile.projects,
+                    searchQuery = searchQuery,
+                    showOnlyFavorites = showOnlyFavorites,
+                    favoriteProjectIds = favoriteProjectIds
+                ),
                 onContactClick = {},
                 onPortfolioClick = {},
                 modifier = Modifier.fillMaxSize()
@@ -182,27 +193,57 @@ private fun ProfileScreenPreviewContent(profile: Profile) {
     }
 }
 
-@Preview(name = "Clair", showBackground = true, heightDp = 1600)
+// Preview 1 : recherche vide, tous les projets affichés (4), aucun favori.
+@Preview(name = "1. État initial", showBackground = true, heightDp = 1700)
 @Composable
-fun ProfileScreenLightPreview() {
+fun ProfileScreenInitialPreview() {
     ProfileScreenPreviewContent(profile = carlosProfile)
 }
 
+// Preview 2 : recherche « TypeScript », filtre favoris activé, 3 favoris (projets 1, 2 et 4).
+// Le projet 4 est favori mais n'utilise pas TypeScript : il est masqué, il reste 2 projets affichés.
+@Preview(name = "2. Recherche + favoris", showBackground = true, heightDp = 1300)
+@Composable
+fun ProfileScreenSearchAndFavoritesPreview() {
+    ProfileScreenPreviewContent(
+        profile = carlosProfile,
+        searchQuery = "TypeScript",
+        showOnlyFavorites = true,
+        favoriteProjectIds = setOf(1, 2, 4)
+    )
+}
+
+// Même état que la preview 2, en thème sombre.
 // uiMode = nuit : isSystemInDarkTheme() renvoie true, le thème applique donc DarkColorScheme.
 @Preview(
-    name = "Sombre",
+    name = "3. Sombre",
     showBackground = true,
-    heightDp = 1600,
+    heightDp = 1300,
     uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
 fun ProfileScreenDarkPreview() {
-    ProfileScreenPreviewContent(profile = carlosProfile)
+    ProfileScreenPreviewContent(
+        profile = carlosProfile,
+        searchQuery = "TypeScript",
+        showOnlyFavorites = true,
+        favoriteProjectIds = setOf(1, 2, 4)
+    )
+}
+
+// Recherche sans résultat : le message vide remplace les cartes et le compteur affiche 0.
+@Preview(name = "4. Aucun résultat", showBackground = true, heightDp = 1100)
+@Composable
+fun ProfileScreenNoResultPreview() {
+    ProfileScreenPreviewContent(
+        profile = carlosProfile,
+        searchQuery = "Swift"
+    )
 }
 
 // Même écran avec un autre profil : montre que les composants sont réutilisables
 // et affiche l'état « non disponible » (pastille rouge).
-@Preview(name = "Non disponible", showBackground = true, heightDp = 1400)
+@Preview(name = "5. Non disponible", showBackground = true, heightDp = 1400)
 @Composable
 fun ProfileScreenUnavailablePreview() {
     ProfileScreenPreviewContent(profile = thomasProfile)
