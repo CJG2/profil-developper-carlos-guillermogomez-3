@@ -79,8 +79,11 @@ fun ProfileScreen(
         }
         // key : l'id identifie chaque projet pour que Compose suive correctement les éléments de la liste.
         items(profile.projects, key = { it.id }) { project ->
+            // Temporaire : les favoris seront branchés au ViewModel à l'étape 6.
             ProjectCard(
                 project = project,
+                isFavorite = false,
+                onFavoriteClick = {},
                 modifier = Modifier.fillMaxWidth()
             )
         }
